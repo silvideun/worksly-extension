@@ -1,0 +1,30 @@
+# Секреты — НИКОГДА не коммитить
+.env
+.env.*
+server/.env
+server/.env.*
+*.secret
+
+# Зависимости
+node_modules/
+
+# Папки редакторов и ассистентов
+.idea/
+.vscode/
+.claude/
+
+# Системный мусор
+.DS_Store
+Thumbs.db
+*.log
+
+# Архивы релизов
+*.zip
+
+# Внутренняя документация и заметки
+docs/
+*.md
+!README.md
+
+# Временные файлы тестов
+_test-*.html

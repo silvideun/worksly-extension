@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Worksly",
+  "version": "1.0.0",
+  "description": "Доступность зарубежных сервисов из РФ: доступ по IP и оплата картой.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "logo/16x16.png",
+      "48": "logo/48x48.png",
+      "128": "logo/128x128.png"
+    }
+  },
+  "icons": {
+    "16": "logo/16x16.png",
+    "48": "logo/48x48.png",
+    "128": "logo/128x128.png"
+  },
+  "permissions": ["webRequest", "storage"],
+  "host_permissions": [
+    "https://store.steampowered.com/*",
+    "https://www.netflix.com/*",
+    "https://chatgpt.com/*",
+    "https://discord.com/*",
+    "https://store.playstation.com/*",
+    "https://open.spotify.com/*",
+    "https://www.xbox.com/*",
+    "https://web.telegram.org/*"
+  ]
+}

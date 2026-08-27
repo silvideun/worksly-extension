@@ -1,0 +1,654 @@
+/* ============================================================
+   Tokens
+   ============================================================ */
+:root {
+  --bg: #ffffff;
+  --popup: #ffffff;
+  --surface-muted: #f7f8f5;
+
+  --ink: #2b2c34;
+  --ink-soft: #2b2c34;
+  --ink-mute: #74767f;
+
+  --line: #e7e7ec;
+  --line-strong: #d7d9d1;
+
+  --brand: #6246ea;
+  --brand-contrast: #ffffff;
+
+  --accent: #0a6f78;
+  --accent-soft: #eaf9fa;
+  --amber: #8a4d18;
+  --amber-soft: #f7ddc7;
+  --red: #c0344b;
+  --red-soft: #fbe7ec;
+  --partner: #166534;
+  --partner-soft: #f0fdf4;
+  --vpn: #001858;
+  --vpn-soft: #e7ebf5;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 380px;
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  border: none;
+  outline: none;
+}
+
+.popup {
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  background: var(--popup);
+  overflow: hidden;
+}
+
+/* ============================================================
+   Header: title, legend, search, tabs
+   ============================================================ */
+.popup-header {
+  flex-shrink: 0;
+  padding: 16px 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.popup-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+
+.popup-title .mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.legend {
+  padding: 7px 0 11px;
+  font-size: 11px;
+  color: var(--ink-mute);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-row b {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.legend-row svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.legend-note {
+  flex-basis: 100%;
+  color: var(--ink-mute);
+  opacity: 0.85;
+}
+
+.search-row {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.search-row input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 0 12px 0 34px;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface-muted);
+  outline: none;
+  transition: border-color .15s;
+}
+
+.search-row input:focus {
+  border-color: var(--brand);
+}
+
+.search-row svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  stroke: var(--ink-mute);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 9px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-mute);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+
+.tab.active {
+  color: var(--ink);
+  border-color: var(--brand);
+}
+
+/* ============================================================
+   List & empty state
+   ============================================================ */
+.list {
+  max-height: 340px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 12px 14px;
+}
+
+.list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 10px;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-mute);
+}
+
+.empty {
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--ink-mute);
+  font-size: 13px;
+}
+
+.empty svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--ink-mute);
+  margin-bottom: 8px;
+}
+
+/* ============================================================
+   Service card
+   ============================================================ */
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  background: var(--popup);
+  transition: border-color .15s;
+}
+
+.card.open {
+  border-color: var(--line-strong);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .15s;
+}
+
+.card-top:hover {
+  background: var(--surface-muted);
+}
+
+.card-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.card-sub {
+  font-size: 11.5px;
+  color: var(--ink-mute);
+  margin-top: 1px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.checked-at {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.checked-at--inline {
+  margin-top: 2px;
+}
+
+.checked-at--block {
+  margin-bottom: 6px;
+}
+
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.heart {
+  width: 16px;
+  height: 16px;
+  stroke: var(--ink-mute);
+  fill: none;
+  flex-shrink: 0;
+  transition: stroke .15s, fill .15s;
+  cursor: pointer;
+}
+
+.heart.filled {
+  stroke: var(--red);
+  fill: var(--red);
+}
+
+.ping-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-mute);
+  transition: background-color .15s, color .15s;
+  flex-shrink: 0;
+}
+
+.ping-btn:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+
+.ping-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+}
+
+.ping-btn.checking,
+.ping-btn:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+.ping-btn.checking svg {
+  animation: ping-spin .8s linear infinite;
+}
+
+@keyframes ping-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.chev {
+  width: 16px;
+  height: 16px;
+  stroke: var(--ink-mute);
+  transition: transform .18s;
+  flex-shrink: 0;
+}
+
+.card.open .chev {
+  transform: rotate(180deg);
+}
+
+.card-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .25s ease;
+}
+
+.card.open .card-body {
+  max-height: 620px;
+}
+
+.card-body-inner {
+  padding: 0 12px 14px;
+}
+
+.status-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  margin-bottom: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.status-row .badge {
+  margin-top: 1px;
+}
+
+.status-row .txt {
+  color: var(--ink-soft);
+  flex: 1;
+}
+
+.status-row .txt b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Badges (доступ / оплата)
+   ============================================================ */
+.badges-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  margin-top: 7px;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 4px 6px 4px 5px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.badge svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+.badge.ok {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge.mid {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.badge.bad {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+/* ============================================================
+   Partner box (VPN / оплата — рекомендованный сервис)
+   ============================================================ */
+.partner-box {
+  border-radius: 10px;
+  padding: 11px 12px;
+  margin-bottom: 8px;
+}
+
+.partner-box:last-child {
+  margin-bottom: 0;
+}
+
+.partner-box.pay {
+  background: var(--partner-soft);
+}
+
+.partner-box.vpn {
+  background: var(--vpn-soft);
+}
+
+.partner-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.partner-box.pay .partner-label {
+  color: var(--partner);
+}
+
+.partner-box.vpn .partner-label {
+  color: var(--vpn);
+}
+
+.partner-label svg {
+  width: 11px;
+  height: 11px;
+  stroke: currentColor;
+}
+
+.partner-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.partner-copy {
+  flex: 1;
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.partner-copy b {
+  font-weight: 600;
+}
+
+.partner-btn {
+  flex-shrink: 0;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: none;
+  color: var(--brand-contrast);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: filter .12s;
+  background: var(--brand);
+}
+
+.partner-btn:hover {
+  filter: brightness(1.1);
+}
+
+.partner-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+}
+
+/* ============================================================
+   Client ping (проверка доступности с устройства пользователя)
+   ============================================================ */
+.checked-at--client {
+  color: var(--ink-mute);
+}
+
+.checked-at--client.is-ok {
+  color: #166534;
+  font-weight: 500;
+}
+
+.checked-at--client.is-bad {
+  color: var(--red);
+  font-weight: 500;
+}
+
+.checked-at--client.is-checking {
+  color: var(--ink-mute);
+}
+
+.checked-at--client svg {
+  width: 11px;
+  height: 11px;
+  stroke: currentColor;
+  vertical-align: -1px;
+  margin-right: 2px;
+}
+
+.diagnostics-box {
+  background: var(--surface-muted);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+}
+
+.diagnostics-box svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  stroke: currentColor;
+}
+
+.diagnostics-box.is-bad {
+  color: var(--red);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.popup-footer {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--ink-mute);
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: var(--brand-contrast);
+  padding: 9px 16px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

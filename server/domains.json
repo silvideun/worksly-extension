@@ -1,0 +1,10 @@
+[
+  { "id": "steam", "domain": "store.steampowered.com" },
+  { "id": "netflix", "domain": "www.netflix.com" },
+  { "id": "chatgpt", "domain": "chatgpt.com" },
+  { "id": "discord", "domain": "discord.com" },
+  { "id": "playstation", "domain": "store.playstation.com" },
+  { "id": "spotify", "domain": "open.spotify.com" },
+  { "id": "xbox", "domain": "www.xbox.com" },
+  { "id": "telegram", "domain": "web.telegram.org" }
+]

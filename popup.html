@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Worksly</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+<div class="popup">
+  <div class="popup-header">
+    <p class="popup-title"><span class="mark">W</span>Worksly</p>
+    <div class="legend">
+      <div class="legend-row"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--accent)"><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="10"/></svg><b>Доступ</b> — открыт ли сайт по IP</div>
+      <div class="legend-row"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--partner)"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><b>Оплата</b> — работает ли карта РФ</div>
+      <div class="legend-note">Статусы — для подключения из РФ без VPN</div>
+    </div>
+    <div class="search-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="Steam, Netflix, ChatGPT..." autocomplete="off">
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="all">Все сервисы</div>
+      <div class="tab" data-tab="fav">Избранное <span id="fav-count"></span></div>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <div class="popup-footer">
+    <span id="footer-count"></span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<template id="card-template">
+  <div class="card" data-id="">
+    <div class="card-top" data-toggle>
+      <div class="card-icon">
+        <img class="icon-img" src="" alt="" loading="lazy">
+      </div>
+      <div class="card-main">
+        <div class="card-name"></div>
+        <div class="card-sub"></div>
+        <div class="card-status-line"></div>
+        <div class="badges-row">
+          <span class="badge badge-access">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="10"/></svg>
+            <span class="badge-text"></span>
+          </span>
+          <span class="badge badge-pay">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <span class="badge-text"></span>
+          </span>
+        </div>
+      </div>
+      <div class="head-actions">
+        <button class="ping-btn" data-ping title="Проверить у себя">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        </button>
+        <svg class="heart" data-heart viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.4 3-5.5A5.5 5.5 0 0 0 12 5a5.5 5.5 0 0 0-10 3.5c0 5.5 10 11.5 10 11.5s2.5-1.5 5-3.7"/></svg>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <div class="status-rows">
+          <div class="status-row">
+            <div class="txt"><b>Доступ.</b> <span class="access-note"></span></div>
+          </div>
+          <div class="status-row">
+            <div class="txt"><b>Оплата.</b> <span class="pay-note"></span></div>
+          </div>
+        </div>
+        <div class="diagnostics-box" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12.5"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
+          <span class="diagnostics-text"></span>
+        </div>
+        <div class="checked-at checked-at--block" hidden></div>
+        <div class="partners-container"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="partner-box-template">
+  <div class="partner-box">
+    <div class="partner-label">
+      <svg class="partner-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      <span class="partner-label-text"></span>
+    </div>
+    <div class="partner-row">
+      <div class="partner-copy"><b class="partner-name"></b> — <span class="partner-note"></span></div>
+      <button class="partner-btn" data-partner="">Перейти
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+      </button>
+    </div>
+  </div>
+</template>
+
+<script type="module" src="popup.js"></script>
+</body>
+</html>
