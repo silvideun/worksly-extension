@@ -16,78 +16,105 @@ export const SERVICES = [
     domain:'store.steampowered.com',
     access:'open',
     pay:'mid',
+    desc:'Пополнение кошелька и покупка происходят через сторонние сервисы или посредников.',
     accessNote:'Сайт и лаунчер работают без VPN с любых провайдеров РФ.',
     payNote:'Карты РФ напрямую не работают. Работает пополнение через сторонние сервисы или подарочные карты.',
-    vpnPartner:null
+    vpnPartners:[],
+    payPartners:[
+      { name:'Playerok', desc:'Пополнение баланса Steam', url:'https://playerok.com/steam/top-up', isPartner:false },
+      { name:'ggsel.net', desc:'Покупка ключей и гифтов игр', url:'https://ggsel.net/catalog/steam-games', isPartner:false }
+    ]
   },
   {
     id:'netflix', icon:'icons/netflix.svg', name:'Netflix', sub:'Стриминг',
     domain:'www.netflix.com',
     access:'vpn',
     pay:'mid',
+    desc:'Посредник либо оформляет новый аккаунт с подпиской, либо продлевает уже существующий иностранный. VPN нужен и после оплаты — без него сервис не откроется.',
     accessNote:'Полный блок из РФ. Вход и просмотр только через VPN.',
     payNote:'Прямой оплаты картой РФ нет. Посредник оформляет новый аккаунт с подпиской или продлевает уже имеющийся иностранный аккаунт.',
-    payPartner:{ badge:'Проверенный сервис', name:'ggsel.net', url:'', note:'Оформление и продление подписки Netflix с оплатой картой РФ.' },
-    vpnPartner:{ badge:'Проверенный сервис', name:'VPN Trust', url:'', note:'Стабильный VPN для доступа и регистрации, оплата картой РФ.' }
+    vpnPartners:[],
+    payPartners:[
+      { name:'ggsel.net', desc:'Покупка и продление подписки', url:'https://ggsel.net/catalog/netflix', isPartner:false }
+    ]
   },
   {
     id:'chatgpt', icon:'icons/openai.svg', name:'ChatGPT Plus', sub:'Подписка OpenAI',
     domain:'chatgpt.com',
     access:'vpn',
     pay:'mid',
+    desc:'Блокировка установлена самим OpenAI, поэтому VPN должен быть любой страны, кроме РФ и Беларуси. Для оплаты подписки потребуется посредник.',
     accessNote:'OpenAI официально ушёл из РФ и блокирует доступ по российскому IP на уровне сервиса - блокировка не сетевая, а от самого OpenAI, поэтому нужен VPN в любую страну кроме РФ/РБ.',
     payNote:'Бесплатная версия оплаты не требует - достаточно VPN. Для приобретения подписки нужен посредник.',
-    payPartner:{ badge:'Проверенный сервис', name:'ggsel.net', url:'', note:'Оформление подписок и цифровых сервисов с оплатой картой РФ.' },
-    vpnPartner:{ badge:'Проверенный сервис', name:'VPN Trust', url:'', note:'Нужен для входа на сайт и регистрации аккаунта.' }
+    vpnPartners:[],
+    payPartners:[
+      { name:'Playerok', desc:'Покупка подписки ChatGPT Plus', url:'https://playerok.com/cgpt/subscription', isPartner:false }
+    ]
   },
   {
     id:'discord', icon:'icons/discord.svg', name:'Discord', sub:'Мессенджер и войс-чаты',
     domain:'discord.com',
     access:'partial',
     pay:'mid',
+    desc:'Доступность нестабильна и зависит от провайдера. Nitro и другие покупки оформляются только через посредника.',
     accessNote:'Доступность нестабильна и зависит от провайдера - у части пользователей сайт и голосовые каналы работают без VPN, у части полностью заблокированы. Для гарантированного результата рекомендуем VPN.',
     payNote:'Карты РФ для Nitro не проходят. Оформление - через посредника или подарочный код.',
-    payPartner:{ badge:'Проверенный сервис', name:'ggsel.net', url:'', note:'Оформление Discord Nitro с оплатой картой РФ.' },
-    vpnPartner:{ badge:'Проверенный сервис', name:'VPN Trust', url:'', note:'Нужен для стабильного доступа к сайту и голосовым каналам.' }
+    vpnPartners:[],
+    payPartners:[
+      { name:'ggsel.net', desc:'Покупка подписки Discord Nitro', url:'https://ggsel.net/catalog/discord-nitro', isPartner:false }
+    ]
   },
   {
     id:'playstation', icon:'icons/playstation.svg', name:'PlayStation Store', sub:'Игры для PS5/PS4',
     domain:'store.playstation.com',
     access:'vpn',
     pay:'mid',
+    desc:'Российский аккаунт покупать не может — витрина скрыта, VPN этого не меняет. Нужен аккаунт другого региона: с ним можно играть и скачивать с российского IP, а пополнять — подарочными картами того же региона или через посредника.',
     accessNote:'Сайт открывается без VPN. Регистрация аккаунта с российским регионом заблокирована Sony (не провайдером) - для неё нужен VPN.',
     payNote:'Карты РФ не привязать к PSN ни в одном регионе. Пополнение - только через подарочные карты нужного региона.',
-    payPartner:{ badge:'Проверенный сервис', name:'ggsel.net', url:'', note:'Подарочные карты PSN нужного региона с оплатой картой РФ.' },
-    vpnPartner:{ badge:'Проверенный сервис', name:'VPN Trust', url:'', note:'Нужен для смены региона аккаунта и доступа к магазину.' }
+    vpnPartners:[],
+    payPartners:[
+      { name:'ggsel.net', desc:'Пополнение баланса и подарочные карты PSN', url:'https://ggsel.net/catalog/psn', isPartner:false }
+    ]
   },
   {
     id:'spotify', icon:'icons/spotify.svg', name:'Spotify', sub:'Музыкальный стриминг',
     domain:'open.spotify.com',
     access:'partial',
     pay:'mid',
+    desc:'Ушёл из РФ в 2022 году, но у части провайдеров открывается и без VPN. В десктопном приложении VPN нужен только на вход — после авторизации работает без него. Premium оформляется через посредника.',
     accessNote:'Официально ушёл из РФ в марте 2022 года, но доступность нестабильна и зависит от провайдера - у части пользователей открывается и без VPN. Для стабильного доступа и регистрации аккаунта нужен VPN.',
     payNote:'Карты РФ не принимаются. Premium оформляется через подарочный код или посредника.',
-    payPartner:{ badge:'Партнёрский сервис', name:'ggsel.net', url:'', note:'Подарочные коды Spotify Premium с оплатой картой РФ.' },
-    vpnPartner:{ badge:'Проверенный сервис', name:'VPN Trust', url:'', note:'Нужен для доступа к сервису и регистрации аккаунта.' }
+    vpnPartners:[],
+    payPartners:[
+      { name:'Playerok', desc:'Покупка подписки Spotify Premium', url:'https://playerok.com/spotify/subscription', isPartner:false }
+    ]
   },
   {
     id:'xbox', icon:'icons/xbox.svg', name:'Xbox', sub:'Игры и подписка Game Pass',
     domain:'www.xbox.com',
     access:'open',
     pay:'mid',
+    desc:'Ранее купленные игры и сетевые сервисы работают без ограничений. На российский регион покупать нельзя: подписки Game Pass и игры оформляются через ключи активации или подарочные карты других регионов.',
     accessNote:'Сайт и сетевые сервисы (мультиплеер, достижения) работают без VPN. Ранее купленные игры запускаются без ограничений.',
     payNote:'Магазин в РФ закрыт, карты РФ не работают. Пополнение и подписки (Game Pass) оформляются через ключи или подарочные карты других регионов.',
-    payPartner:{ badge:'Проверенный сервис', name:'ggsel.net', url:'', note:'Ключи активации Xbox Game Pass, подписок и игр с оплатой картой РФ.' },
-    vpnPartner:null
+    vpnPartners:[],
+    payPartners:[
+      { name:'Plati.Market', desc:'Покупка подписки Xbox Game Pass', url:'https://plati.market/games/xbox-microsoft-store/192/', isPartner:false }
+    ]
   },
   {
     id:'telegram', icon:'icons/telegram.svg', name:'Telegram', sub:'Мессенджер и Premium',
     domain:'web.telegram.org',
     access:'vpn',
     pay:'mid',
+    payBoxNote:'Платёж картой РФ проходит не всегда',
+    desc:'Заблокирован на уровне провайдера. Без VPN или прокси не подключается. Premium и Звёзды оплачиваются картой РФ прямо в приложении, но платёж проходит не всегда.',
     accessNote:'Сервис заблокирован в РФ и ограничен мерами РКН. Для стабильного подключения, звонков и загрузки медиа требуется VPN или прокси.',
     payNote:'Прямой оплаты картой РФ нет. Оплата через бота @PremiumBot может сбоить. Для гарантированного оформления подписки используют подарочные коды или посредников.',
-    payPartner:{ badge:'Проверенный сервис', name:'ggsel.net', url:'', note:'Подарочные коды и оформление Telegram Premium с оплатой картой РФ.' },
-    vpnPartner:{ badge:'Проверенный сервис', name:'VPN Trust', url:'', note:'Нужен для стабильного подключения, звонков и загрузки медиа без ограничений.' }
+    vpnPartners:[],
+    payPartners:[
+      { name:'Playerok', desc:'Покупка подписки Telegram Premium', url:'https://playerok.com/telegram/premium', isPartner:false }
+    ]
   }
 ];

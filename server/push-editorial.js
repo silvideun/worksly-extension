@@ -12,7 +12,7 @@ const SERVICES_FILE = path.join(__dirname, '..', 'services.js');
 const ENV_FILE = path.join(__dirname, '.env.local');
 
 // Поля, доступные для удаленного обновления
-const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'sub', 'payPartner', 'vpnPartner'];
+const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'accessBoxNote', 'payBoxNote', 'desc', 'sub', 'payPartner', 'vpnPartner', 'payPartners', 'vpnPartners'];
 
 const VALID_ACCESS = ['open', 'partial', 'vpn'];
 const VALID_PAY = ['ok', 'mid'];

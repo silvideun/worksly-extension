@@ -4,6 +4,7 @@ import { hasWebRequest, describeNetworkError, pingDomain, getCachedPing, setCach
 // Статус читаем через Cloudflare Worker (HTTPS-прокси над сервером)
 const STATUS_URL = 'https://worksly-status.winterbornxd.workers.dev';
 const FAVORITES_STORAGE_KEY = 'workslyFavorites';
+const LIVE_STATUS_STORAGE_KEY = 'workslyLiveStatus';
 const hasChromeStorage = typeof chrome !== 'undefined' && !!chrome.storage?.local;
 
 const favorites = new Set();
@@ -20,13 +21,7 @@ const footerCountEl = document.getElementById('footer-count');
 const tabs = document.querySelectorAll('.tab');
 
 const cardTemplate = document.getElementById('card-template');
-const partnerTemplate = document.getElementById('partner-box-template');
-
-const ICONS = {
-  vpn: '<path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/>',
-  check: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
-  check2: '<path d="M20 6 9 17l-5-5"/>'
-};
+const verifiedItemTemplate = document.getElementById('verified-item-template');
 
 function pluralize(n, one, few, many){
   const mod10 = n % 10, mod100 = n % 100;
@@ -52,42 +47,34 @@ function formatExact(iso){
   return `${date}, ${time}`;
 }
 
-function pingResultText(service, ping){
-  const isOpen = service.access === 'open';
-  if(ping.status === 'ok'){
-    return isOpen
-      ? '✓ Сайт открывается с вашего текущего подключения.'
-      : '✓ Сайт открывается с вашего текущего подключения. Обратите внимание: для полной работы аккаунта и оплаты по-прежнему могут действовать ограничения для РФ.';
-  }
-  return isOpen
-    ? 'Сайт сейчас не отвечает. Обычно из РФ он работает — похоже, временный сбой.'
-    : 'С вашего подключения сайт сейчас не открывается. Если вы в РФ — включите VPN. Если VPN уже работает — попробуйте сменить страну или сервер.';
-}
+function createVerifiedItem(item){
+  const clone = verifiedItemTemplate.content.cloneNode(true);
+  const el = clone.querySelector('.verified-item');
+  el.querySelector('.verified-item-name').textContent = item.name;
+  el.querySelector('.verified-item-desc').textContent = item.desc || item.note || '';
 
-function createPartnerBox(kind, iconKey, label, partner){
-  const clone = partnerTemplate.content.cloneNode(true);
-  const box = clone.querySelector('.partner-box');
-  box.classList.add(kind);
-  box.querySelector('.partner-icon').innerHTML = ICONS[iconKey];
-  box.querySelector('.partner-label-text').textContent = label;
-  box.querySelector('.partner-name').textContent = partner.name;
-  box.querySelector('.partner-note').textContent = partner.note;
-  const btn = box.querySelector('.partner-btn');
-  btn.dataset.partner = partner.name;
-  btn.addEventListener('click', (e) => {
+  const badgeEl = el.querySelector('.verified-item-badge');
+  const isPartner = !!(item.isPartner || item.badge === 'Партнёр' || item.badge === 'ПАРТНЁР');
+  badgeEl.hidden = !isPartner;
+  if(item.badge && item.badge !== 'Проверенный сервис') {
+    badgeEl.textContent = item.badge;
+  }
+
+  el.addEventListener('click', (e) => {
     e.stopPropagation();
-    if(partner.url && partner.url.trim()){
-      const targetUrl = partner.url.trim();
+    if(item.url && item.url.trim()){
+      const targetUrl = item.url.trim();
       if(typeof chrome !== 'undefined' && chrome.tabs?.create){
         chrome.tabs.create({ url: targetUrl });
       } else {
         window.open(targetUrl, '_blank', 'noopener,noreferrer');
       }
     } else {
-      showToast(`Демо-переход на ${partner.name} (заглушка)`);
+      showToast(`Откроется ${item.name} в новой вкладке (в прототипе — без перехода)`);
     }
   });
-  return box;
+
+  return el;
 }
 
 function populateCard(cardEl, service){
@@ -104,8 +91,37 @@ function populateCard(cardEl, service){
 
   cardEl.querySelector('.card-name').textContent = service.name;
   cardEl.querySelector('.card-sub').textContent = service.sub;
-  cardEl.querySelector('.access-note').textContent = service.accessNote;
-  cardEl.querySelector('.pay-note').textContent = service.payNote;
+  const accessBox = cardEl.querySelector('.status-box--access');
+  if(accessBox){
+    const accessMeta = {
+      open:    { theme: 'theme-good',  title: 'Доступ — сайт открывается', note: 'Работает у всех провайдеров РФ' },
+      partial: { theme: 'theme-mixed', title: 'Доступ — частично',          note: 'Работает у части провайдеров' },
+      vpn:     { theme: 'theme-bad',   title: 'Доступ — нужен VPN',        note: 'Не работает ни у одного провайдера' }
+    }[service.access] || { theme: 'theme-good', title: 'Доступ — сайт открывается', note: 'Работает у всех провайдеров РФ' };
+
+    accessBox.className = `status-box status-box--access ${accessMeta.theme}`;
+    accessBox.querySelector('.status-box-title').textContent = accessMeta.title;
+    accessBox.querySelector('.access-note').textContent = service.accessBoxNote || accessMeta.note;
+  }
+
+  const payBox = cardEl.querySelector('.status-box--pay');
+  if(payBox){
+    const payMeta = {
+      ok:  { theme: 'theme-good', title: 'Оплата — карта РФ работает', note: 'Можно оплатить напрямую' },
+      mid: { theme: 'theme-warn', title: 'Оплата — нужен посредник',   note: 'Карты РФ не проходят' }
+    }[service.pay] || { theme: 'theme-warn', title: 'Оплата — нужен посредник', note: 'Карты РФ не проходят' };
+
+    payBox.className = `status-box status-box--pay ${payMeta.theme}`;
+    payBox.querySelector('.status-box-title').textContent = payMeta.title;
+    payBox.querySelector('.pay-note').textContent = service.payBoxNote || payMeta.note;
+  }
+
+  const descEl = cardEl.querySelector('.card-desc');
+  if(descEl){
+    const descText = service.desc || (service.accessNote ? `${service.accessNote} ${service.payNote}` : '');
+    descEl.textContent = descText;
+    descEl.hidden = !descText;
+  }
 
   const accessMap = {
     open:    { cls:'ok',  label:'Доступ есть' },
@@ -159,40 +175,124 @@ function populateCard(cardEl, service){
   const heart = cardEl.querySelector('.heart');
   heart.classList.toggle('filled', isFav);
 
-  const diagBox = cardEl.querySelector('.diagnostics-box');
+  const diagIdle = cardEl.querySelector('.diag-idle');
+  const diagResult = cardEl.querySelector('.diag-result');
+  const diagServerFooter = cardEl.querySelector('.diag-server-footer');
+
   if(ping && ping.status !== 'checking' && ping.checkedAt){
-    diagBox.hidden = false;
-    diagBox.classList.toggle('is-bad', ping.status === 'blocked');
-    diagBox.querySelector('.diagnostics-text').textContent = pingResultText(service, ping);
+    if(diagIdle) diagIdle.hidden = true;
+    if(diagResult){
+      diagResult.hidden = false;
+      const isOk = ping.status === 'ok';
+      diagResult.className = `diag-result ${isOk ? 'is-ok' : 'is-bad'}`;
+
+      const titleEl = diagResult.querySelector('.diag-result-title');
+      const noteEl = diagResult.querySelector('.diag-result-note');
+      const stampEl = diagResult.querySelector('.diag-result-stamp');
+
+      if(isOk){
+        titleEl.textContent = 'Сайт открывается с вашего подключения';
+        noteEl.textContent = 'Оплата и полноценная работа аккаунта из РФ по-прежнему ограничены — понадобится посредник.';
+      } else {
+        titleEl.textContent = 'Сайт не открылся с вашего подключения';
+        if(service.access === 'partial'){
+          noteEl.textContent = 'Ограничение ставит ваш оператор связи. У другого провайдера или мобильной сети сервис может работать — иначе понадобится VPN.';
+        } else {
+          noteEl.textContent = 'Понадобится VPN. Проверка идёт только до сайта и не учитывает работу приложения.';
+        }
+      }
+
+      stampEl.textContent = `проверено с вашего устройства · ${formatExact(ping.checkedAt)}`;
+    }
+    if(diagServerFooter){
+      diagServerFooter.hidden = false;
+      const serverFooterTimeEl = diagServerFooter.querySelector('.diag-server-footer-time');
+      if(serverFooterTimeEl){
+        serverFooterTimeEl.textContent = live?.checkedAt ? formatExact(live.checkedAt) : 'недавно';
+      }
+    }
   } else {
-    diagBox.hidden = true;
+    if(diagResult) diagResult.hidden = true;
+    if(diagServerFooter) diagServerFooter.hidden = true;
+    if(diagIdle){
+      diagIdle.hidden = false;
+      const serverTimeEl = diagIdle.querySelector('.diag-server-time');
+      if(serverTimeEl){
+        serverTimeEl.textContent = live?.checkedAt ? formatExact(live.checkedAt) : 'недавно';
+      }
+      const clientStatusEl = diagIdle.querySelector('.diag-client-status');
+      const clientLine = diagIdle.querySelector('.diag-line--client');
+      const diagBtn = diagIdle.querySelector('[data-diag-ping]');
+      if(ping?.status === 'checking'){
+        if(clientLine) clientLine.className = 'diag-line diag-line--client is-checking';
+        if(clientStatusEl) clientStatusEl.textContent = 'проверяем…';
+        if(diagBtn){
+          diagBtn.textContent = 'проверяем…';
+          diagBtn.disabled = true;
+        }
+      } else {
+        if(clientLine) clientLine.className = 'diag-line diag-line--client';
+        if(clientStatusEl) clientStatusEl.textContent = 'пока не проверяли';
+        if(diagBtn){
+          diagBtn.textContent = 'проверить сейчас';
+          diagBtn.disabled = false;
+        }
+      }
+    }
   }
 
-  const exactBlock = cardEl.querySelector('.checked-at--block');
-  if(live?.checkedAt){
-    exactBlock.hidden = false;
-    exactBlock.textContent = `Данные проверены автоматически: ${formatExact(live.checkedAt)}`;
-  } else {
-    exactBlock.hidden = true;
-  }
+  const verifiedSection = cardEl.querySelector('.verified-section');
+  if(verifiedSection){
+    const vpnListEl = verifiedSection.querySelector('.vpn-list');
+    const payListEl = verifiedSection.querySelector('.pay-list');
+    const vpnGroupEl = verifiedSection.querySelector('.verified-group--vpn');
+    const payGroupEl = verifiedSection.querySelector('.verified-group--pay');
+    const countEl = verifiedSection.querySelector('.verified-count');
+    const disclaimerEl = verifiedSection.querySelector('.verified-disclaimer');
 
-  const partnersContainer = cardEl.querySelector('.partners-container');
-  partnersContainer.innerHTML = '';
-  if(service.access !== 'open' && service.vpnPartner){
-    const b = service.vpnPartner.badge || 'Проверенный сервис';
-    const label = b.includes('·') ? b : `${b} · VPN`;
-    partnersContainer.appendChild(createPartnerBox('vpn', 'vpn', label, service.vpnPartner));
-  }
-  if(service.pay !== 'ok' && service.payPartner){
-    const b = service.payPartner.badge || 'Проверенный сервис';
-    const label = b.includes('·') ? b : `${b} · оплата`;
-    partnersContainer.appendChild(createPartnerBox('pay', 'check', label, service.payPartner));
+    vpnListEl.innerHTML = '';
+    payListEl.innerHTML = '';
+
+    const rawVpn = service.vpnPartners || (service.vpnPartner ? [service.vpnPartner] : []);
+    const vpnItems = (Array.isArray(rawVpn) ? rawVpn : [rawVpn]).filter(Boolean);
+
+    const rawPay = service.payPartners || (service.payPartner ? [service.payPartner] : []);
+    const payItems = (Array.isArray(rawPay) ? rawPay : [rawPay]).filter(Boolean);
+
+    const sortPartners = (items) => [...items].sort((a, b) => {
+      const aPart = (a.isPartner || a.badge === 'Партнёр' || a.badge === 'ПАРТНЁР') ? 1 : 0;
+      const bPart = (b.isPartner || b.badge === 'Партнёр' || b.badge === 'ПАРТНЁР') ? 1 : 0;
+      return bPart - aPart;
+    });
+
+    const sortedVpn = sortPartners(vpnItems);
+    const sortedPay = sortPartners(payItems);
+
+    sortedVpn.forEach(item => vpnListEl.appendChild(createVerifiedItem(item)));
+    sortedPay.forEach(item => payListEl.appendChild(createVerifiedItem(item)));
+
+    const totalCount = sortedVpn.length + sortedPay.length;
+    if(totalCount > 0){
+      verifiedSection.hidden = false;
+      vpnGroupEl.hidden = sortedVpn.length === 0;
+      payGroupEl.hidden = sortedPay.length === 0;
+      countEl.textContent = totalCount;
+
+      const hasAnyPartner = [...sortedVpn, ...sortedPay].some(p => p.isPartner || p.badge === 'Партнёр' || p.badge === 'ПАРТНЁР');
+      if(hasAnyPartner){
+        disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Часть ссылок партнёрские — они отмечены. Условия и цены — на стороне сервиса.';
+      } else {
+        disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Мы не берём за это денег и не отвечаем за их условия и цены.';
+      }
+    } else {
+      verifiedSection.hidden = true;
+    }
   }
 }
 
 function attachCardEvents(cardEl, service){
   cardEl.querySelector('[data-toggle]').addEventListener('click', (e) => {
-    if(e.target.closest('[data-heart]') || e.target.closest('[data-ping]')) return;
+    if(e.target.closest('[data-heart]') || e.target.closest('[data-ping]') || e.target.closest('[data-diag-ping]') || e.target.closest('[data-verified-item]') || e.target.closest('[data-collapse]')) return;
     const wasOpen = cardEl.classList.contains('open');
     cardEl.classList.toggle('open', !wasOpen);
     if(wasOpen) openIds.delete(service.id); else openIds.add(service.id);
@@ -207,6 +307,22 @@ function attachCardEvents(cardEl, service){
     e.stopPropagation();
     runClientPing(service);
   });
+
+  cardEl.querySelectorAll('[data-diag-ping]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      runClientPing(service);
+    });
+  });
+
+  const collapseBtn = cardEl.querySelector('[data-collapse]');
+  if(collapseBtn){
+    collapseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cardEl.classList.remove('open');
+      openIds.delete(service.id);
+    });
+  }
 }
 
 function createCardElement(service){
@@ -342,6 +458,28 @@ function showToast(msg){
   toastTimer = setTimeout(() => toast.classList.remove('show'), 1700);
 }
 
+/* Прошлый ответ сервера хранится локально, чтобы плашка "Проверено N назад" была на месте
+   уже в первом кадре. Иначе она появляется вместе с ответом из сети и раздвигает карточки. */
+async function hydrateLiveStatusFromCache(){
+  if(!hasChromeStorage) return;
+  try {
+    const data = await chrome.storage.local.get(LIVE_STATUS_STORAGE_KEY);
+    const saved = data[LIVE_STATUS_STORAGE_KEY];
+    if(saved && typeof saved === 'object') liveStatus = saved;
+  } catch (err) {
+    console.warn('Worksly: не удалось прочитать кэш статуса', err);
+  }
+}
+
+async function saveLiveStatus(){
+  if(!hasChromeStorage) return;
+  try {
+    await chrome.storage.local.set({ [LIVE_STATUS_STORAGE_KEY]: liveStatus });
+  } catch (err) {
+    console.warn('Worksly: не удалось сохранить кэш статуса', err);
+  }
+}
+
 async function fetchLiveStatus(){
   try {
     const res = await fetch(STATUS_URL, { signal: AbortSignal.timeout(5000) });
@@ -349,21 +487,26 @@ async function fetchLiveStatus(){
     const data = await res.json();
     liveStatus = data.services || {};
     updateAllCards();
+    saveLiveStatus();
   } catch (err) {
-    // сервер недоступен — плашки "проверено" останутся скрыты
+    // сервер недоступен — показываем прошлый снимок из кэша, он честно датирован checkedAt
   }
 }
 
-const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'sub', 'payPartner', 'vpnPartner'];
+const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'accessBoxNote', 'payBoxNote', 'desc', 'sub', 'payPartner', 'vpnPartner', 'payPartners', 'vpnPartners'];
 const VALID_ACCESS = ['open', 'partial', 'vpn'];
 const VALID_PAY = ['ok', 'mid'];
 
 function sanitizePartner(partner){
   if(!partner || typeof partner !== 'object') return null;
-  if(!partner.name || !partner.note) return null;
-  const result = { name: String(partner.name).trim(), note: String(partner.note).trim() };
+  if(!partner.name) return null;
+  const result = {
+    name: String(partner.name).trim(),
+    desc: String(partner.desc || partner.note || '').trim()
+  };
   if(partner.badge) result.badge = String(partner.badge).trim();
   if(partner.url) result.url = String(partner.url).trim();
+  if(typeof partner.isPartner === 'boolean') result.isPartner = partner.isPartner;
   return result;
 }
 
@@ -381,6 +524,14 @@ function applyEditorial(remote){
 
       if(field === 'payPartner' || field === 'vpnPartner'){
         service[field] = value === null ? null : sanitizePartner(value);
+        continue;
+      }
+      if(field === 'payPartners' || field === 'vpnPartners'){
+        if(Array.isArray(value)){
+          service[field] = value.map(sanitizePartner).filter(Boolean);
+        } else if(value === null){
+          service[field] = [];
+        }
         continue;
       }
       if(typeof value !== 'string' || !value.trim()) continue;
@@ -425,7 +576,8 @@ search.addEventListener('input', render);
 async function init(){
   await Promise.all([
     loadFavorites(),
-    hydrateClientPingFromCache()
+    hydrateClientPingFromCache(),
+    hydrateLiveStatusFromCache()
   ]);
   render();
 

@@ -297,15 +297,28 @@ body {
 .checked-at {
   font-size: 11px;
   font-style: italic;
-  color: var(--accent);
+  color: var(--ink-mute);
 }
 
 .checked-at--inline {
   margin-top: 2px;
 }
 
-.checked-at--block {
-  margin-bottom: 6px;
+.checked-at--client.is-ok {
+  color: #166534;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.checked-at--client.is-bad {
+  color: var(--red);
+  font-weight: 500;
+  font-style: normal;
+}
+
+.checked-at--client.is-checking {
+  color: var(--brand);
+  font-style: italic;
 }
 
 .head-actions {
@@ -384,17 +397,27 @@ body {
   transform: rotate(180deg);
 }
 
+/* Три элемента - три роли. .card-body анимирует, .card-body-inner обрезает,
+   .card-body-content держит отступы. Отступы обязаны лежать именно здесь:
+   grid-template-rows: 0fr обнуляет только content-box, а padding и border
+   схлопывающегося элемента остаются снаружи него и торчат из свёрнутой карточки. */
 .card-body {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .22s ease-out;
   overflow: hidden;
-  transition: max-height .25s ease;
 }
 
 .card.open .card-body {
-  max-height: 620px;
+  grid-template-rows: 1fr;
 }
 
 .card-body-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.card-body-content {
   padding: 0 12px 14px;
 }
 
@@ -407,26 +430,103 @@ body {
   border-top: 1px solid var(--line);
 }
 
-.status-row {
+.status-box {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  font-size: 12.5px;
-  line-height: 1.5;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  border: 1px solid transparent;
 }
 
-.status-row .badge {
-  margin-top: 1px;
+.status-box-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
 }
 
-.status-row .txt {
-  color: var(--ink-soft);
+.status-box-body {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.status-row .txt b {
-  color: var(--ink);
+.status-box-title {
+  font-size: 12.5px;
   font-weight: 600;
+  line-height: 1.3;
+}
+
+.status-box-note {
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.status-box.theme-good {
+  background: #f3faf6;
+  border-color: #dcf0e5;
+}
+.status-box.theme-good .status-box-dot {
+  background: #2f9e6a;
+}
+.status-box.theme-good .status-box-title {
+  color: #1a6844;
+}
+.status-box.theme-good .status-box-note {
+  color: #4a6b5b;
+}
+
+.status-box.theme-mixed {
+  background: #fdfaee;
+  border-color: #f2e8c8;
+}
+.status-box.theme-mixed .status-box-dot {
+  background: #b58f14;
+}
+.status-box.theme-mixed .status-box-title {
+  color: #7a5f14;
+}
+.status-box.theme-mixed .status-box-note {
+  color: #6e5c22;
+}
+
+.status-box.theme-bad {
+  background: #fdf5f8;
+  border-color: #f5dfe8;
+}
+.status-box.theme-bad .status-box-dot {
+  background: #c93f74;
+}
+.status-box.theme-bad .status-box-title {
+  color: #82295f;
+}
+.status-box.theme-bad .status-box-note {
+  color: #77445e;
+}
+
+.status-box.theme-warn {
+  background: #fdf7ef;
+  border-color: #f5e6d0;
+}
+.status-box.theme-warn .status-box-dot {
+  background: #c07d1e;
+}
+.status-box.theme-warn .status-box-title {
+  color: #8a5010;
+}
+.status-box.theme-warn .status-box-note {
+  color: #78561f;
+}
+
+.card-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4a4a55;
+  margin: 0 0 10px;
 }
 
 /* ============================================================
@@ -473,147 +573,320 @@ body {
 }
 
 /* ============================================================
-   Partner box (VPN / оплата — рекомендованный сервис)
+   Verified services block (Проверенные сервисы)
    ============================================================ */
-.partner-box {
-  border-radius: 10px;
-  padding: 11px 12px;
-  margin-bottom: 8px;
+.verified-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.partner-box:last-child {
-  margin-bottom: 0;
-}
-
-.partner-box.pay {
-  background: var(--partner-soft);
-}
-
-.partner-box.vpn {
-  background: var(--vpn-soft);
-}
-
-.partner-label {
+.verified-head {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 10.5px;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.verified-title {
+  font-family: ui-monospace, 'IBM Plex Mono', 'Cascadia Code', 'SF Mono', monospace;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: .03em;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  color: #787885;
 }
 
-.partner-box.pay .partner-label {
-  color: var(--partner);
+.verified-count {
+  font-family: ui-monospace, 'IBM Plex Mono', 'Cascadia Code', 'SF Mono', monospace;
+  font-size: 10px;
+  color: #787885;
 }
 
-.partner-box.vpn .partner-label {
-  color: var(--vpn);
+.verified-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.partner-label svg {
-  width: 11px;
-  height: 11px;
-  stroke: currentColor;
+.verified-group-title {
+  font-family: ui-monospace, 'IBM Plex Mono', 'Cascadia Code', 'SF Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding-left: 2px;
 }
 
-.partner-row {
+.verified-group--vpn .verified-group-title {
+  color: #7b5cf0;
+}
+
+.verified-group--pay .verified-group-title {
+  color: #2f9e6a;
+}
+
+.verified-list {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #eaeaf0;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.verified-item {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.partner-copy {
-  flex: 1;
-  font-size: 12px;
-  color: var(--ink);
-  line-height: 1.4;
-}
-
-.partner-copy b {
-  font-weight: 600;
-}
-
-.partner-btn {
-  flex-shrink: 0;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: none;
-  color: var(--brand-contrast);
-  font-size: 12px;
-  font-weight: 600;
+  padding: 9px 11px;
   cursor: pointer;
+  transition: background-color .12s;
+}
+
+.verified-item + .verified-item {
+  border-top: 1px solid #f0f0f4;
+}
+
+.verified-group--vpn .verified-item:hover {
+  background: #f7f5ff;
+}
+
+.verified-group--pay .verified-item:hover {
+  background: #f4fbf7;
+}
+
+.verified-item-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.verified-group--vpn .verified-item-dot {
+  background: #7b5cf0;
+}
+
+.verified-group--pay .verified-item-dot {
+  background: #2f9e6a;
+}
+
+.verified-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.verified-item-name-row {
   display: flex;
   align-items: center;
-  gap: 5px;
-  transition: filter .12s;
-  background: var(--brand);
+  gap: 6px;
 }
 
-.partner-btn:hover {
-  filter: brightness(1.1);
+.verified-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
 }
 
-.partner-btn svg {
-  width: 12px;
-  height: 12px;
-  stroke: currentColor;
+.verified-item-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #5b3fe4;
+  background: #ede9fe;
+  padding: 1.5px 5px;
+  border-radius: 4px;
+}
+
+.verified-item-desc {
+  font-size: 11px;
+  color: #8a8a95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.verified-item-arrow {
+  font-size: 13px;
+  color: #5B3FE4;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.verified-disclaimer {
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #6e6e7a;
+  padding: 2px 2px 0;
 }
 
 /* ============================================================
-   Client ping (проверка доступности с устройства пользователя)
+   Collapse button
    ============================================================ */
-.checked-at--client {
-  color: var(--ink-mute);
+.card-collapse-row {
+  margin-top: 10px;
+  border-top: 1px solid #f0f0f4;
+  display: flex;
+  justify-content: center;
 }
 
-.checked-at--client.is-ok {
-  color: #166534;
+.card-collapse-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 11.5px;
   font-weight: 500;
+  color: #6e6e7a;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color .12s, color .12s;
+  border-radius: 0 0 8px 8px;
 }
 
-.checked-at--client.is-bad {
-  color: var(--red);
-  font-weight: 500;
+.card-collapse-btn:hover {
+  background: #faf9ff;
+  color: var(--brand);
 }
 
-.checked-at--client.is-checking {
-  color: var(--ink-mute);
+/* ============================================================
+   Diagnostics block (Проверка со стороны РФ и с устройства)
+   ============================================================ */
+.card-diag {
+  border-top: 1px dashed var(--line);
+  padding-top: 9px;
+  margin: 10px 0;
 }
 
-.checked-at--client svg {
+.diag-idle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.diag-line {
+  font-family: ui-monospace, 'IBM Plex Mono', 'Cascadia Code', 'SF Mono', monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #6e6e7a;
+}
+
+.diag-line--client.is-checking {
+  color: var(--brand);
+}
+
+.diag-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a30c9;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  align-self: flex-start;
+  margin-top: 3px;
+}
+
+.diag-btn:hover {
+  color: var(--brand);
+}
+
+/* Карточка с результатом проверки */
+.diag-result {
+  border-radius: 9px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diag-result.is-ok {
+  background: #fdfaf0;
+  border: 1px solid #f6eccb;
+}
+
+.diag-result.is-bad {
+  background: #fdf5f8;
+  border: 1px solid #f5dfe8;
+}
+
+.diag-result-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.diag-result-icon {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.diag-result.is-ok .diag-result-icon {
+  background: #f8edd1;
+  color: #926c0b;
+}
+
+.diag-result.is-bad .diag-result-icon {
+  background: #fae4ed;
+  color: #c93f74;
+}
+
+.diag-result-icon svg {
   width: 11px;
   height: 11px;
   stroke: currentColor;
-  vertical-align: -1px;
-  margin-right: 2px;
 }
 
-.diagnostics-box {
-  background: var(--surface-muted);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  font-size: 12px;
-  color: var(--ink-soft);
-  line-height: 1.5;
-  display: flex;
-  gap: 7px;
-  align-items: flex-start;
+.diag-result.is-ok .diag-icon-bad,
+.diag-result.is-bad .diag-icon-ok {
+  display: none;
 }
 
-.diagnostics-box svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
+.diag-result-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.diag-result.is-ok .diag-result-title {
+  color: #8c690d;
+}
+
+.diag-result.is-bad .diag-result-title {
+  color: #82295f;
+}
+
+.diag-result-note {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #555560;
+}
+
+.diag-result-stamp {
+  font-family: ui-monospace, 'IBM Plex Mono', 'Cascadia Code', 'SF Mono', monospace;
+  font-size: 11px;
+  color: #787885;
   margin-top: 1px;
-  stroke: currentColor;
 }
 
-.diagnostics-box.is-bad {
-  color: var(--red);
+.diag-server-footer {
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+  margin-top: 8px;
 }
 
 /* ============================================================
