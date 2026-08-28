@@ -50,6 +50,25 @@ async function checkDomain(domain) {
   return second;
 }
 
+async function sendWithRetry(label, send) {
+  try {
+    if ((await send()).ok) return true;
+  } catch {}
+
+  await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+  try {
+    const res = await send();
+    if (res.ok) {
+      console.log(`  ${label}: со второй попытки`);
+      return true;
+    }
+    console.error(`${label} failed: HTTP ${res.status}`);
+  } catch (err) {
+    console.error(`${label} failed:`, err);
+  }
+  return false;
+}
+
 // Уровни: open (200-399), refused (403/429 от сервиса), silent (таймаут/сеть)
 function levelOf(data) {
   if (!data.reachable) return 'silent';
@@ -70,29 +89,29 @@ function describePastLevel(level) {
   return 'сервер отказывал';
 }
 
-// Отправка алерта в Telegram через Cloudflare Worker-релей при подтвержденной смене статуса
+
 async function notifyChanges(env, changes) {
-  if (!changes.length || !env.RELAY_URL || !env.RELAY_SECRET) return;
+  if (!changes.length) return true;
+  if (!env.RELAY_URL || !env.RELAY_SECRET) return false;
 
   const lines = changes.map(c => `${c.id}: ${c.from} → ${c.to}`);
 
-  // Особое предупреждение, если сервис снова открылся для РФ
+
   const opened = changes.filter(c => c.opened).map(c => c.id);
   if (opened.length) {
     lines.push('');
     lines.push(`Похоже, для РФ открылся: ${opened.join(', ')}. Проверьте руками и обновите данные.`);
   }
 
-  try {
-    await fetch(env.RELAY_URL, {
+  const body = JSON.stringify({ text: `Worksly: изменения доступности\n${lines.join('\n')}` });
+  return sendWithRetry('notify', () =>
+    fetch(env.RELAY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Relay-Secret': env.RELAY_SECRET },
-      body: JSON.stringify({ text: `Worksly: изменения доступности\n${lines.join('\n')}` }),
+      body,
       signal: AbortSignal.timeout(TIMEOUT_MS)
-    });
-  } catch (err) {
-    console.error('notify failed:', err);
-  }
+    })
+  );
 }
 
 // Регулярная сводка статусов раз в 3 дня
@@ -106,48 +125,37 @@ async function sendDigest(env, services, digestLevels) {
     return `${id}: ${describeLevel(data)}${changed ? '  ← изменилось' : ''}`;
   });
 
-  try {
-    const res = await fetch(env.RELAY_URL, {
+  const body = JSON.stringify({ text: `Worksly: сводка\n\n${lines.join('\n')}` });
+  return sendWithRetry('digest', () =>
+    fetch(env.RELAY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Relay-Secret': env.RELAY_SECRET },
-      body: JSON.stringify({ text: `Worksly: сводка\n\n${lines.join('\n')}` }),
+      body,
       signal: AbortSignal.timeout(TIMEOUT_MS)
-    });
-    if (!res.ok) {
-      console.error('digest failed: HTTP', res.status);
-      return false;
-    }
-    return true;
-  } catch (err) {
-    console.error('digest failed:', err);
-    return false;
-  }
+    })
+  );
 }
 
-// Сигнал жизни сервера для мониторинга Cronitor (Dead man's switch)
+
 async function pingCronitor(env, state) {
   if (!env.CRONITOR_URL) return;
-  try {
-    await fetch(`${env.CRONITOR_URL}?state=${state}`, { signal: AbortSignal.timeout(TIMEOUT_MS) });
-  } catch (err) {
-    console.error('cronitor ping failed:', err);
-  }
+  await sendWithRetry(`cronitor ping (${state})`, () =>
+    fetch(`${env.CRONITOR_URL}?state=${state}`, { signal: AbortSignal.timeout(TIMEOUT_MS) })
+  );
 }
 
-// Публикация status.json в Cloudflare Worker (HTTPS-прокси для расширений)
+
 async function pushStatus(env, status) {
   if (!env.PUSH_URL || !env.PUSH_SECRET) return;
-  try {
-    const res = await fetch(env.PUSH_URL, {
+  const body = JSON.stringify(status);
+  await sendWithRetry('push', () =>
+    fetch(env.PUSH_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Push-Secret': env.PUSH_SECRET },
-      body: JSON.stringify(status),
+      body,
       signal: AbortSignal.timeout(TIMEOUT_MS)
-    });
-    if (!res.ok) console.error('push failed: HTTP', res.status);
-  } catch (err) {
-    console.error('push failed:', err);
-  }
+    })
+  );
 }
 
 async function main() {
@@ -178,7 +186,7 @@ async function main() {
     const before = previous[id];
     const level = levelOf(data);
 
-    // Первый запуск для сервиса: запоминаем как есть, не уведомляем
+
     if (!before) {
       data.notifiedLevel = level;
       continue;
@@ -198,7 +206,8 @@ async function main() {
       to: describeLevel(data),
       opened: lastNotified === 'refused' && level === 'open'
     });
-    data.notifiedLevel = level;
+
+    data.notifiedLevel = lastNotified;
   }
 
   // Уровни на момент прошлой сводки
@@ -216,7 +225,12 @@ async function main() {
   console.log(`[${now}] checked ${domains.length} domains${changes.length ? `, ${changes.length} changed` : ''}`);
 
   await pushStatus(env, status);
-  await notifyChanges(env, changes);
+
+  if (await notifyChanges(env, changes)) {
+    for (const c of changes) services[c.id].notifiedLevel = levelOf(services[c.id]);
+  } else if (changes.length) {
+    console.error('  уведомление не ушло, повторим на следующем прогоне');
+  }
 
   if (digestDue && await sendDigest(env, services, digestLevels)) {
     status.lastDigestAt = now;
