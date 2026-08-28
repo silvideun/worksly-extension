@@ -125,7 +125,7 @@ function populateCard(cardEl, service){
 
   const accessMap = {
     open:    { cls:'ok',  label:'Доступ есть' },
-    partial: { cls:'mid', label:'Частично / Сбой' },
+    partial: { cls:'mid', label:'Частично' },
     vpn:     { cls:'bad', label:'Нужен VPN' }
   };
   const accessInfo = accessMap[service.access] || accessMap.open;
@@ -195,7 +195,11 @@ function populateCard(cardEl, service){
         noteEl.textContent = 'Оплата и полноценная работа аккаунта из РФ по-прежнему ограничены — понадобится посредник.';
       } else {
         titleEl.textContent = 'Сайт не открылся с вашего подключения';
-        if(service.access === 'partial'){
+        if(service.access === 'open'){
+          // Для сервиса, который открывается из РФ без VPN, совет включить VPN был бы враньём:
+          // недоступность здесь означает сбой, а не блокировку (docs/client-ping.md, п.11)
+          noteEl.textContent = 'Обычно он работает из РФ без VPN — похоже, временный сбой на стороне сервиса или в вашей сети. VPN здесь скорее всего не поможет, попробуйте позже.';
+        } else if(service.access === 'partial'){
           noteEl.textContent = 'Ограничение ставит ваш оператор связи. У другого провайдера или мобильной сети сервис может работать — иначе понадобится VPN.';
         } else {
           noteEl.textContent = 'Понадобится VPN. Проверка идёт только до сайта и не учитывает работу приложения.';
