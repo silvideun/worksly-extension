@@ -24,8 +24,6 @@
   --red-soft: #fbe7ec;
   --partner: #166534;
   --partner-soft: #f0fdf4;
-  --vpn: #001858;
-  --vpn-soft: #e7ebf5;
 }
 
 /* ============================================================
@@ -619,10 +617,6 @@ body {
   padding-left: 2px;
 }
 
-.verified-group--vpn .verified-group-title {
-  color: #7b5cf0;
-}
-
 .verified-group--pay .verified-group-title {
   color: #2f9e6a;
 }
@@ -649,10 +643,6 @@ body {
   border-top: 1px solid #f0f0f4;
 }
 
-.verified-group--vpn .verified-item:hover {
-  background: #f7f5ff;
-}
-
 .verified-group--pay .verified-item:hover {
   background: #f4fbf7;
 }
@@ -662,10 +652,6 @@ body {
   height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
-}
-
-.verified-group--vpn .verified-item-dot {
-  background: #7b5cf0;
 }
 
 .verified-group--pay .verified-item-dot {

@@ -12,9 +12,9 @@ const SERVICES_FILE = path.join(__dirname, '..', 'services.js');
 const ENV_FILE = path.join(__dirname, '.env.local');
 
 // Поля, доступные для удаленного обновления
-const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'accessBoxNote', 'payBoxNote', 'desc', 'sub', 'payPartner', 'vpnPartner', 'payPartners', 'vpnPartners'];
+const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'accessBoxNote', 'payBoxNote', 'desc', 'sub', 'payPartner', 'payPartners'];
 
-const VALID_ACCESS = ['open', 'partial', 'vpn'];
+const VALID_ACCESS = ['open', 'partial', 'block'];
 const VALID_PAY = ['ok', 'mid'];
 
 function loadEnv() {
@@ -128,7 +128,7 @@ async function main() {
     console.error('\nСервер принял запрос, но данные НЕ обновились.');
     console.error(`  отправляли: ${payload.updatedAt}`);
     console.error(`  лежит там:  ${stored?.updatedAt ?? '(ничего)'}`);
-    console.error('  Причина обычно в сети: прокси/VPN подменил ответ, запрос не дошёл.');
+    console.error('  Причина обычно в сети: локальный прокси подменил ответ, запрос не дошёл.');
     process.exit(1);
   }
 

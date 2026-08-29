@@ -96,7 +96,7 @@ function populateCard(cardEl, service){
     const accessMeta = {
       open:    { theme: 'theme-good',  title: 'Доступ — сайт открывается', note: 'Работает у всех провайдеров РФ' },
       partial: { theme: 'theme-mixed', title: 'Доступ — частично',          note: 'Работает у части провайдеров' },
-      vpn:     { theme: 'theme-bad',   title: 'Доступ — нужен VPN',        note: 'Не работает ни у одного провайдера' }
+      block:   { theme: 'theme-bad',   title: 'Доступ — нет прямого доступа', note: 'Не открывается при обычном подключении' }
     }[service.access] || { theme: 'theme-good', title: 'Доступ — сайт открывается', note: 'Работает у всех провайдеров РФ' };
 
     accessBox.className = `status-box status-box--access ${accessMeta.theme}`;
@@ -126,7 +126,7 @@ function populateCard(cardEl, service){
   const accessMap = {
     open:    { cls:'ok',  label:'Доступ есть' },
     partial: { cls:'mid', label:'Частично' },
-    vpn:     { cls:'bad', label:'Нужен VPN' }
+    block:   { cls:'bad', label:'Недоступен' }
   };
   const accessInfo = accessMap[service.access] || accessMap.open;
   const accessBadge = cardEl.querySelector('.badge-access');
@@ -192,21 +192,18 @@ function populateCard(cardEl, service){
 
       if(isOk){
         titleEl.textContent = 'Сайт открывается с вашего подключения';
-        // Фраза про посредника берётся из pay, а не пишется намертво: иначе у сервиса с pay:'ok'
-        // она спорила бы с собственным бейджем «Оплата РФ» (docs/client-ping.md, п.11)
+
         noteEl.textContent = service.pay === 'ok'
           ? 'Оплата картой РФ проходит напрямую. Проверка идёт только до сайта и не учитывает работу приложения.'
           : 'Оплата и полноценная работа аккаунта из РФ по-прежнему ограничены — понадобится посредник.';
       } else {
         titleEl.textContent = 'Сайт не открылся с вашего подключения';
         if(service.access === 'open'){
-          // Для сервиса, который открывается из РФ без VPN, совет включить VPN был бы враньём:
-          // недоступность здесь означает сбой, а не блокировку (docs/client-ping.md, п.11)
-          noteEl.textContent = 'Обычно он работает из РФ без VPN — похоже, временный сбой на стороне сервиса или в вашей сети. VPN здесь скорее всего не поможет, попробуйте позже.';
+          noteEl.textContent = 'Обычно он открывается из РФ напрямую — похоже, временный сбой на стороне сервиса или в вашей сети. Попробуйте позже.';
         } else if(service.access === 'partial'){
-          noteEl.textContent = 'Ограничение ставит ваш оператор связи. У другого провайдера или мобильной сети сервис может работать — иначе понадобится VPN.';
+          noteEl.textContent = 'Ограничение на стороне вашего провайдера или сети. У другого оператора сервис может открываться.';
         } else {
-          noteEl.textContent = 'Понадобится VPN. Проверка идёт только до сайта и не учитывает работу приложения.';
+          noteEl.textContent = 'Сайт недоступен с вашего подключения. Проверка идёт только до веб-адреса и не учитывает работу отдельного приложения.';
         }
       }
 
@@ -251,46 +248,40 @@ function populateCard(cardEl, service){
 
   const verifiedSection = cardEl.querySelector('.verified-section');
   if(verifiedSection){
-    const vpnListEl = verifiedSection.querySelector('.vpn-list');
     const payListEl = verifiedSection.querySelector('.pay-list');
-    const vpnGroupEl = verifiedSection.querySelector('.verified-group--vpn');
     const payGroupEl = verifiedSection.querySelector('.verified-group--pay');
     const countEl = verifiedSection.querySelector('.verified-count');
     const disclaimerEl = verifiedSection.querySelector('.verified-disclaimer');
 
-    vpnListEl.innerHTML = '';
     payListEl.innerHTML = '';
 
-    const rawVpn = service.vpnPartners || (service.vpnPartner ? [service.vpnPartner] : []);
-    const vpnItems = (Array.isArray(rawVpn) ? rawVpn : [rawVpn]).filter(Boolean);
+    if(service.pay !== 'ok'){
+      const rawPay = service.payPartners || (service.payPartner ? [service.payPartner] : []);
+      const payItems = (Array.isArray(rawPay) ? rawPay : [rawPay]).filter(Boolean);
 
-    const rawPay = service.payPartners || (service.payPartner ? [service.payPartner] : []);
-    const payItems = (Array.isArray(rawPay) ? rawPay : [rawPay]).filter(Boolean);
+      const sortPartners = (items) => [...items].sort((a, b) => {
+        const aPart = (a.isPartner || a.badge === 'Партнёр' || a.badge === 'ПАРТНЁР') ? 1 : 0;
+        const bPart = (b.isPartner || b.badge === 'Партнёр' || b.badge === 'ПАРТНЁР') ? 1 : 0;
+        return bPart - aPart;
+      });
 
-    const sortPartners = (items) => [...items].sort((a, b) => {
-      const aPart = (a.isPartner || a.badge === 'Партнёр' || a.badge === 'ПАРТНЁР') ? 1 : 0;
-      const bPart = (b.isPartner || b.badge === 'Партнёр' || b.badge === 'ПАРТНЁР') ? 1 : 0;
-      return bPart - aPart;
-    });
+      const sortedPay = sortPartners(payItems);
+      sortedPay.forEach(item => payListEl.appendChild(createVerifiedItem(item)));
 
-    const sortedVpn = sortPartners(vpnItems);
-    const sortedPay = sortPartners(payItems);
+      const totalCount = sortedPay.length;
+      if(totalCount > 0){
+        verifiedSection.hidden = false;
+        payGroupEl.hidden = false;
+        countEl.textContent = totalCount;
 
-    sortedVpn.forEach(item => vpnListEl.appendChild(createVerifiedItem(item)));
-    sortedPay.forEach(item => payListEl.appendChild(createVerifiedItem(item)));
-
-    const totalCount = sortedVpn.length + sortedPay.length;
-    if(totalCount > 0){
-      verifiedSection.hidden = false;
-      vpnGroupEl.hidden = sortedVpn.length === 0;
-      payGroupEl.hidden = sortedPay.length === 0;
-      countEl.textContent = totalCount;
-
-      const hasAnyPartner = [...sortedVpn, ...sortedPay].some(p => p.isPartner || p.badge === 'Партнёр' || p.badge === 'ПАРТНЁР');
-      if(hasAnyPartner){
-        disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Часть ссылок партнёрские — они отмечены. Условия и цены — на стороне сервиса.';
+        const hasAnyPartner = sortedPay.some(p => p.isPartner || p.badge === 'Партнёр' || p.badge === 'ПАРТНЁР');
+        if(hasAnyPartner){
+          disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Часть ссылок партнёрские — они отмечены. Условия и цены — на стороне сервиса.';
+        } else {
+          disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Мы не берём за это денег и не отвечаем за их условия и цены.';
+        }
       } else {
-        disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Мы не берём за это денег и не отвечаем за их условия и цены.';
+        verifiedSection.hidden = true;
       }
     } else {
       verifiedSection.hidden = true;
@@ -501,8 +492,8 @@ async function fetchLiveStatus(){
   }
 }
 
-const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'accessBoxNote', 'payBoxNote', 'desc', 'sub', 'payPartner', 'vpnPartner', 'payPartners', 'vpnPartners'];
-const VALID_ACCESS = ['open', 'partial', 'vpn'];
+const EDITORIAL_FIELDS = ['access', 'pay', 'accessNote', 'payNote', 'accessBoxNote', 'payBoxNote', 'desc', 'sub', 'payPartner', 'payPartners'];
+const VALID_ACCESS = ['open', 'partial', 'block'];
 const VALID_PAY = ['ok', 'mid'];
 
 function sanitizePartner(partner){
@@ -530,11 +521,11 @@ function applyEditorial(remote){
       if(field === 'access' && !VALID_ACCESS.includes(value)) continue;
       if(field === 'pay' && !VALID_PAY.includes(value)) continue;
 
-      if(field === 'payPartner' || field === 'vpnPartner'){
+      if(field === 'payPartner'){
         service[field] = value === null ? null : sanitizePartner(value);
         continue;
       }
-      if(field === 'payPartners' || field === 'vpnPartners'){
+      if(field === 'payPartners'){
         if(Array.isArray(value)){
           service[field] = value.map(sanitizePartner).filter(Boolean);
         } else if(value === null){
