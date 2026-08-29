@@ -1,15 +1,7 @@
-/* Модальные окна попапа: «Сообщить об ошибке» и «Сотрудничество».
-   Оболочка одна на всё расширение — заголовок подставляется, содержимое переключается
-   переключением .modal-pane. Новое окно = новый pane в popup.html + строка в MODAL_TITLES.
-
-   Файл ничего не знает о карточках и о рендере списка. Тост и открытие ссылок приходят
-   параметрами в initModals(), чтобы не заводить кольцевую зависимость с popup.js. */
-
 import { SERVICES } from './services.js';
 
 const MODAL_TITLES = { report: 'Сообщить об ошибке', contact: 'Сотрудничество' };
 
-// Воркер приёма жалоб, исходник - server/worker/report.js
 const REPORT_URL = 'https://worksly-feedback.winterbornxd.workers.dev';
 const REPORT_DRAFT_KEY = 'workslyReportDraft';
 const REPORT_LAST_SENT_KEY = 'workslyReportLastSent';
@@ -64,8 +56,6 @@ function fillServiceSelect(){
   });
 }
 
-/* Черновик жалобы переживает закрытие попапа. Попап Chrome закрывается от любого клика мимо
-   него - без этого человек, отвлёкшийся на вкладку, терял бы написанный текст. */
 let draftTimer;
 
 async function loadDraft(){
@@ -108,8 +98,6 @@ async function forgetDraft(){
   }
 }
 
-/* Пауза между отправками - защита от случайного повтора, а не от злого умысла: обойти её
-   можно за минуту. Настоящее ограничение стоит в воркере, здесь только вежливость. */
 async function tooSoon(){
   if(!hasChromeStorage) return false;
   try {
@@ -177,8 +165,6 @@ async function sendReport(showToast){
       return;
     }
 
-    // текст НЕ чистим и окно не закрываем: переписывать написанное заново - худшее, что можно
-    // предложить человеку, который уже потратил время
     showToast(res.status === 429
       ? 'Слишком много обращений, попробуйте позже'
       : 'Не удалось отправить, попробуйте позже');
@@ -202,7 +188,6 @@ export function initModals({ showToast, openExternal }){
     btn.addEventListener('click', () => openModal(btn.dataset.modalOpen));
   });
 
-  // закрытие: крестик, клик по затемнённому фону мимо окна, Esc
   overlay.addEventListener('click', (e) => {
     if(e.target === overlay || e.target.closest('[data-modal-close]')) closeModal();
   });
@@ -215,7 +200,6 @@ export function initModals({ showToast, openExternal }){
     btn.addEventListener('click', async () => {
       const value = btn.dataset.copy;
       const copied = await copyText(value);
-      // при отказе буфера адрес всё равно называем: строку в окне можно выделить мышью
       showToast(copied ? `Почта скопирована: ${value}` : `Не удалось скопировать. Почта: ${value}`);
     });
   });
