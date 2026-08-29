@@ -172,8 +172,14 @@ function populateCard(cardEl, service){
   pingBtn.disabled = isChecking;
   pingBtn.title = isChecking ? 'Проверка...' : 'Проверить у себя';
 
+  const favBtn = cardEl.querySelector('[data-heart]');
+  if(favBtn){
+    favBtn.title = isFav ? 'Убрать из избранного' : 'В избранное';
+  }
   const heart = cardEl.querySelector('.heart');
-  heart.classList.toggle('filled', isFav);
+  if(heart){
+    heart.classList.toggle('filled', isFav);
+  }
 
   const diagIdle = cardEl.querySelector('.diag-idle');
   const diagResult = cardEl.querySelector('.diag-result');
@@ -382,7 +388,7 @@ function updateFavCount(){
 function renderEmptyState(){
   return activeTab === 'fav'
     ? `<div class="empty">
-         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.4 3-5.5A5.5 5.5 0 0 0 12 5a5.5 5.5 0 0 0-10 3.5c0 5.5 10 11.5 10 11.5s2.5-1.5 5-3.7"/></svg><br>
+         <svg viewBox="0 0 472 472" fill="none" stroke="currentColor" stroke-width="32" stroke-linejoin="round"><path d="M433.601,67.001c-24.7-24.7-57.4-38.2-92.3-38.2s-67.7,13.6-92.4,38.3l-12.9,12.9l-13.1-13.1c-24.7-24.7-57.6-38.4-92.5-38.4c-34.8,0-67.6,13.6-92.2,38.2c-24.7,24.7-38.3,57.5-38.2,92.4c0,34.9,13.7,67.6,38.4,92.3l187.8,187.8c2.6,2.6,6.1,4,9.5,4c3.4,0,6.9-1.3,9.5-3.9l188.2-187.5c24.7-24.7,38.3-57.5,38.3-92.4C471.801,124.501,458.301,91.701,433.601,67.001z"/></svg><br>
          Пока пусто.<br>Нажмите сердечко на нужном сервисе.
        </div>`
     : `<div class="empty">Ничего не нашлось.<br>Попробуйте другой запрос.</div>`;
