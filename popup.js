@@ -1,5 +1,6 @@
 import { SERVICES } from './services.js';
 import { hasWebRequest, describeNetworkError, pingDomain, getCachedPing, setCachedPing } from './client-ping.js';
+import { initModals } from './modals.js';
 
 // Статус читаем через Cloudflare Worker (HTTPS-прокси над сервером)
 const STATUS_URL = 'https://worksly-status.winterbornxd.workers.dev';
@@ -47,6 +48,15 @@ function formatExact(iso){
   return `${date}, ${time}`;
 }
 
+
+function openExternal(url){
+  if(typeof chrome !== 'undefined' && chrome.tabs?.create){
+    chrome.tabs.create({ url });
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}
+
 function createVerifiedItem(item){
   const clone = verifiedItemTemplate.content.cloneNode(true);
   const el = clone.querySelector('.verified-item');
@@ -63,12 +73,7 @@ function createVerifiedItem(item){
   el.addEventListener('click', (e) => {
     e.stopPropagation();
     if(item.url && item.url.trim()){
-      const targetUrl = item.url.trim();
-      if(typeof chrome !== 'undefined' && chrome.tabs?.create){
-        chrome.tabs.create({ url: targetUrl });
-      } else {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      }
+      openExternal(item.url.trim());
     } else {
       showToast(`Откроется ${item.name} в новой вкладке (в прототипе — без перехода)`);
     }
@@ -401,7 +406,7 @@ function render(){
 
   footerCountEl.textContent = activeTab === 'fav'
     ? `${favorites.size} в избранном`
-    : `${SERVICES.length} ${pluralize(SERVICES.length,'сервис','сервиса','сервисов')} · обновлено сегодня`;
+    : `${SERVICES.length} ${pluralize(SERVICES.length,'сервис','сервиса','сервисов')}`;
 
   list.innerHTML = '';
 
@@ -579,6 +584,8 @@ tabs.forEach(t => {
 search.addEventListener('input', render);
 
 async function init(){
+  initModals({ showToast, openExternal });
+
   await Promise.all([
     loadFavorites(),
     hydrateClientPingFromCache(),
