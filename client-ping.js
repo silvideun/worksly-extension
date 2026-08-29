@@ -68,7 +68,9 @@ export function pingDomain(domain){
     chrome.webRequest.onCompleted.addListener(onCompleted, { urls:[`https://${domain}/*`] });
     chrome.webRequest.onErrorOccurred.addListener(onErrorOccurred, { urls:[`https://${domain}/*`] });
 
-    fetch(url, { mode:'no-cors', cache:'no-store' }).catch(() => {});
+    // credentials:'omit' - куки к проверке не прикладываются. Кросс-доменный запрос их и так
+    // не отправляет, но политика приватности утверждает это прямо, значит и в коде должно стоять явно
+    fetch(url, { mode:'no-cors', cache:'no-store', credentials:'omit' }).catch(() => {});
 
     safetyTimer = setTimeout(() => {
       finish({ status:'blocked', reason:'network', networkError:'CLIENT_TIMEOUT' });
