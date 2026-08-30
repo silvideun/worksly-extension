@@ -6,6 +6,7 @@ import { initModals } from './modals.js';
 const STATUS_URL = 'https://worksly-status.winterbornxd.workers.dev';
 const FAVORITES_STORAGE_KEY = 'workslyFavorites';
 const LIVE_STATUS_STORAGE_KEY = 'workslyLiveStatus';
+const ACTIVE_TAB_STORAGE_KEY = 'workslyActiveTab';
 const hasChromeStorage = typeof chrome !== 'undefined' && !!chrome.storage?.local;
 
 const favorites = new Set();
@@ -442,6 +443,36 @@ async function saveFavorites(){
   }
 }
 
+async function loadActiveTab(){
+  if(!hasChromeStorage) return null;
+  try {
+    const data = await chrome.storage.local.get(ACTIVE_TAB_STORAGE_KEY);
+    return data[ACTIVE_TAB_STORAGE_KEY] || null;
+  } catch (err) {
+    console.warn('Worksly: не удалось прочитать сохранённую вкладку', err);
+    return null;
+  }
+}
+
+async function saveActiveTab(){
+  if(!hasChromeStorage) return;
+  try {
+    await chrome.storage.local.set({ [ACTIVE_TAB_STORAGE_KEY]: activeTab });
+  } catch (err) {
+    console.warn('Worksly: не удалось сохранить вкладку', err);
+  }
+}
+
+/* Открываем на «Избранном» только если там что-то есть. Иначе человек, убравший оттуда всё,
+   при следующем открытии увидит пустой экран вместо списка сервисов и решит, что сломалось.
+   Раскрытые карточки и строку поиска не запоминаем осознанно: вкладка это режим, а они -
+   сиюминутное действие, возвращать к нему через сутки незачем. */
+function applySavedTab(savedTab){
+  if(savedTab !== 'fav' || favorites.size === 0) return;
+  activeTab = 'fav';
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === 'fav'));
+}
+
 function toggleFav(s){
   if(favorites.has(s.id)){
     favorites.delete(s.id);
@@ -577,6 +608,7 @@ tabs.forEach(t => {
     tabs.forEach(x => x.classList.remove('active'));
     t.classList.add('active');
     activeTab = t.dataset.tab;
+    saveActiveTab();
     render();
   });
 });
@@ -586,11 +618,13 @@ search.addEventListener('input', render);
 async function init(){
   initModals({ showToast, openExternal });
 
-  await Promise.all([
+  const [savedTab] = await Promise.all([
+    loadActiveTab(),
     loadFavorites(),
     hydrateClientPingFromCache(),
     hydrateLiveStatusFromCache()
   ]);
+  applySavedTab(savedTab);
   render();
 
   fetchEditorial();
