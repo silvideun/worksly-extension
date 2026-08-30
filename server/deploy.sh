@@ -8,11 +8,25 @@
 set -u
 
 SSH_KEY="$HOME/.ssh/worksly_server"
-SSH_HOST="root@109.196.164.53"
 REMOTE_DIR="/opt/worksly-checker"
 FILES=(checker.js server.js domains.json)
 
 cd "$(dirname "$0")" || exit 1
+
+# Адрес сервера в репозитории НЕ хранится: репозиторий публичный, и строка вида root@<ip>
+# в открытом виде прямо подсказывает, какой хост и какого пользователя перебирать.
+# Берём из переменной окружения, иначе из .env.local — он в git не попадает.
+if [ -z "${WORKSLY_SSH_HOST:-}" ] && [ -f .env.local ]; then
+  WORKSLY_SSH_HOST=$(grep -E '^SSH_HOST=' .env.local | head -1 | cut -d= -f2- | tr -d '\r"' | xargs)
+fi
+SSH_HOST="${WORKSLY_SSH_HOST:-}"
+
+if [ -z "$SSH_HOST" ]; then
+  echo "Не задан адрес сервера."
+  echo "Впишите строку  SSH_HOST=root@<ip>  в server/.env.local"
+  echo "или задайте переменную окружения WORKSLY_SSH_HOST."
+  exit 1
+fi
 
 ssh_run() {
   ssh -o StrictHostKeyChecking=accept-new -i "$SSH_KEY" "$SSH_HOST" "$@"
