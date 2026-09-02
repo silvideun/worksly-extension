@@ -43,7 +43,7 @@ export const SERVICES = [
     ]
   },
   {
-    id:'chatgpt', icon:'icons/openai.svg', name:'ChatGPT Plus', sub:'Подписка OpenAI',
+    id:'chatgpt', icon:'icons/openai.svg', name:'ChatGPT', sub:'Подписка OpenAI',
     aliases:['чатгпт', 'чат гпт', 'опенаи', 'опенэйай'],
     domain:'chatgpt.com',
     access:'block',
