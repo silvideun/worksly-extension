@@ -8,6 +8,10 @@
 //   ok  - карта РФ принимается сервисом напрямую
 //   mid - напрямую нельзя, но посредник решает вопрос (своей картой/аккаунтом), вы платите ему картой РФ
 //
+// aliases: как сервис набирают в поиске по-русски ("стим", "нетфликс"). Ищется вместе с name,
+//   подзаголовок sub в поиск не входит. Пишутся строчными, совпадение по подстроке:
+//   "чатгпт" ловит и "гпт", отдельной записи для этого не нужно.
+//
 // domain: используется и для клиентского пинга, и для серверного чекера (server/domains.json).
 // При добавлении нового сервиса - не забыть продублировать домен в manifest.json → host_permissions,
 // иначе chrome.webRequest не увидит запросы к нему (клиентский пинг для него не заработает).
@@ -15,6 +19,7 @@
 export const SERVICES = [
   {
     id:'steam', icon:'icons/steam.svg', name:'Steam', sub:'Игры и достижения',
+    aliases:['стим'],
     domain:'store.steampowered.com',
     access:'open',
     pay:'mid',
@@ -28,6 +33,7 @@ export const SERVICES = [
   },
   {
     id:'netflix', icon:'icons/netflix.svg', name:'Netflix', sub:'Стриминг',
+    aliases:['нетфликс', 'нэтфликс'],
     domain:'www.netflix.com',
     access:'block',
     pay:'mid',
@@ -40,6 +46,7 @@ export const SERVICES = [
   },
   {
     id:'chatgpt', icon:'icons/openai.svg', name:'ChatGPT Plus', sub:'Подписка OpenAI',
+    aliases:['чатгпт', 'чат гпт', 'опенаи', 'опенэйай'],
     domain:'chatgpt.com',
     access:'block',
     pay:'mid',
@@ -52,6 +59,7 @@ export const SERVICES = [
   },
   {
     id:'discord', icon:'icons/discord.svg', name:'Discord', sub:'Мессенджер и войс-чаты',
+    aliases:['дискорд', 'диса'],
     domain:'discord.com',
     access:'partial',
     pay:'mid',
@@ -64,6 +72,7 @@ export const SERVICES = [
   },
   {
     id:'playstation', icon:'icons/playstation.svg', name:'PlayStation Store', sub:'Игры для PS5/PS4',
+    aliases:['плейстейшн', 'плэйстейшн', 'плойка', 'псн'],
     domain:'store.playstation.com',
     access:'open',
     pay:'mid',
@@ -76,6 +85,7 @@ export const SERVICES = [
   },
   {
     id:'spotify', icon:'icons/spotify.svg', name:'Spotify', sub:'Музыкальный стриминг',
+    aliases:['спотифай', 'спотик'],
     domain:'open.spotify.com',
     access:'partial',
     pay:'mid',
@@ -88,6 +98,7 @@ export const SERVICES = [
   },
   {
     id:'xbox', icon:'icons/xbox.svg', name:'Xbox', sub:'Игры и подписка Game Pass',
+    aliases:['иксбокс', 'хбокс', 'геймпасс', 'гейм пасс'],
     domain:'www.xbox.com',
     access:'open',
     pay:'mid',
@@ -100,6 +111,7 @@ export const SERVICES = [
   },
   {
     id:'telegram', icon:'icons/telegram.svg', name:'Telegram', sub:'Мессенджер и Premium',
+    aliases:['телеграм', 'телега', 'тг'],
     domain:'web.telegram.org',
     access:'block',
     pay:'mid',

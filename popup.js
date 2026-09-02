@@ -400,9 +400,18 @@ function renderEmptyState(){
     : `<div class="empty">Ничего не нашлось.<br>Попробуйте другой запрос.</div>`;
 }
 
+/* Ищем по названию и по русским написаниям из aliases: аудитория набирает "стим" и "нетфликс",
+   а не Steam и Netflix. Подзаголовок в поиск намеренно не входит - "игры" выдавало бы половину
+   списка, и человек не понимал бы, по какому слову совпало. */
+function matchesQuery(service, q){
+  if(!q) return true;
+  if(service.name.toLowerCase().includes(q)) return true;
+  return (service.aliases || []).some(alias => alias.toLowerCase().includes(q));
+}
+
 function render(){
   const q = search.value.trim().toLowerCase();
-  let items = SERVICES.filter(s => s.name.toLowerCase().includes(q));
+  let items = SERVICES.filter(s => matchesQuery(s, q));
   if(activeTab === 'fav') items = items.filter(s => favorites.has(s.id));
 
   footerCountEl.textContent = activeTab === 'fav'
