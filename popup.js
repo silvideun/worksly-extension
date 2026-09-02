@@ -76,7 +76,7 @@ function createVerifiedItem(item){
     if(item.url && item.url.trim()){
       openExternal(item.url.trim());
     } else {
-      showToast(`Откроется ${item.name} в новой вкладке (в прототипе — без перехода)`);
+      showToast(`Ссылка на ${item.name} пока не добавлена`);
     }
   });
 
@@ -100,10 +100,10 @@ function populateCard(cardEl, service){
   const accessBox = cardEl.querySelector('.status-box--access');
   if(accessBox){
     const accessMeta = {
-      open:    { theme: 'theme-good',  title: 'Доступ — сайт открывается', note: 'Работает у всех провайдеров РФ' },
-      partial: { theme: 'theme-mixed', title: 'Доступ — частично',          note: 'Работает у части провайдеров' },
-      block:   { theme: 'theme-bad',   title: 'Доступ — нет прямого доступа', note: 'Не открывается при обычном подключении' }
-    }[service.access] || { theme: 'theme-good', title: 'Доступ — сайт открывается', note: 'Работает у всех провайдеров РФ' };
+      open:    { theme: 'theme-good',  title: 'Доступ - сайт открывается',     note: 'Работает у всех провайдеров РФ' },
+      partial: { theme: 'theme-mixed', title: 'Доступ - частично',             note: 'Работает у части провайдеров' },
+      block:   { theme: 'theme-bad',   title: 'Доступ - сайт не открывается',  note: 'Не открывается при прямом подключении' }
+    }[service.access] || { theme: 'theme-good', title: 'Доступ - сайт открывается', note: 'Работает у всех провайдеров РФ' };
 
     accessBox.className = `status-box status-box--access ${accessMeta.theme}`;
     accessBox.querySelector('.status-box-title').textContent = accessMeta.title;
@@ -113,9 +113,9 @@ function populateCard(cardEl, service){
   const payBox = cardEl.querySelector('.status-box--pay');
   if(payBox){
     const payMeta = {
-      ok:  { theme: 'theme-good', title: 'Оплата — карта РФ работает', note: 'Можно оплатить напрямую' },
-      mid: { theme: 'theme-warn', title: 'Оплата — нужен посредник',   note: 'Карты РФ не проходят' }
-    }[service.pay] || { theme: 'theme-warn', title: 'Оплата — нужен посредник', note: 'Карты РФ не проходят' };
+      ok:  { theme: 'theme-good', title: 'Оплата - карта РФ работает', note: 'Можно оплатить напрямую' },
+      mid: { theme: 'theme-warn', title: 'Оплата - нужен посредник',   note: 'Карты РФ не проходят' }
+    }[service.pay] || { theme: 'theme-warn', title: 'Оплата - нужен посредник', note: 'Карты РФ не проходят' };
 
     payBox.className = `status-box status-box--pay ${payMeta.theme}`;
     payBox.querySelector('.status-box-title').textContent = payMeta.title;
@@ -207,11 +207,11 @@ function populateCard(cardEl, service){
 
         noteEl.textContent = service.pay === 'ok'
           ? 'Оплата картой РФ проходит напрямую. Проверка идёт только до сайта и не учитывает работу приложения.'
-          : 'Оплата и полноценная работа аккаунта из РФ по-прежнему ограничены — понадобится посредник.';
+          : 'Оплата и полноценная работа аккаунта из РФ по-прежнему ограничены, понадобится посредник.';
       } else {
         titleEl.textContent = 'Сайт не открылся с вашего подключения';
         if(service.access === 'open'){
-          noteEl.textContent = 'Обычно он открывается из РФ напрямую — похоже, временный сбой на стороне сервиса или в вашей сети. Попробуйте позже.';
+          noteEl.textContent = 'Обычно он открывается из РФ напрямую, похоже на временный сбой на стороне сервиса или в вашей сети. Попробуйте позже.';
         } else if(service.access === 'partial'){
           noteEl.textContent = 'Ограничение на стороне вашего провайдера или сети. У другого оператора сервис может открываться.';
         } else {
@@ -242,9 +242,9 @@ function populateCard(cardEl, service){
       const diagBtn = diagIdle.querySelector('[data-diag-ping]');
       if(ping?.status === 'checking'){
         if(clientLine) clientLine.className = 'diag-line diag-line--client is-checking';
-        if(clientStatusEl) clientStatusEl.textContent = 'проверяем…';
+        if(clientStatusEl) clientStatusEl.textContent = 'проверяем...';
         if(diagBtn){
-          diagBtn.textContent = 'проверяем…';
+          diagBtn.textContent = 'проверяем...';
           diagBtn.disabled = true;
         }
       } else {
@@ -288,7 +288,7 @@ function populateCard(cardEl, service){
 
         const hasAnyPartner = sortedPay.some(p => p.isPartner || p.badge === 'Партнёр' || p.badge === 'ПАРТНЁР');
         if(hasAnyPartner){
-          disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Часть ссылок партнёрские — они отмечены. Условия и цены — на стороне сервиса.';
+          disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Часть ссылок партнёрские, они отмечены. За условия и цены отвечает сам сервис.';
         } else {
           disclaimerEl.textContent = 'Сервисы, которыми пользуемся сами. Мы не берём за это денег и не отвечаем за их условия и цены.';
         }

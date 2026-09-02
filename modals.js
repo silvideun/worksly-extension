@@ -120,7 +120,7 @@ function extensionVersion(){
 function setSending(state){
   sending = state;
   form.sendBtn.disabled = state;
-  form.sendBtn.textContent = state ? 'Отправляем…' : 'Отправить';
+  form.sendBtn.textContent = state ? 'Отправляем...' : 'Отправить';
 }
 
 async function sendReport(showToast){
