@@ -400,9 +400,7 @@ function renderEmptyState(){
     : `<div class="empty">Ничего не нашлось.<br>Попробуйте другой запрос.</div>`;
 }
 
-/* Ищем по названию и по русским написаниям из aliases: аудитория набирает "стим" и "нетфликс",
-   а не Steam и Netflix. Подзаголовок в поиск намеренно не входит - "игры" выдавало бы половину
-   списка, и человек не понимал бы, по какому слову совпало. */
+// Ищем по name и aliases, подзаголовок sub намеренно не ищется
 function matchesQuery(service, q){
   if(!q) return true;
   if(service.name.toLowerCase().includes(q)) return true;
