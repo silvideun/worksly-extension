@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Worksly",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Доступность зарубежных сервисов из РФ: доступ по IP и оплата картой.",
   "action": {
     "default_popup": "popup.html",
